@@ -1,0 +1,66 @@
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    parallelism: 1
+    steps:
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      # run tests!
+      - run: gradle test
+      - store_artifacts:
+          name: Store artifacts
+          path: build/reports
+          destination: artifacts
+      - store_test_results:
+          path: build/test-results
+  schemaspy:
+    resource_class: small
+    working_directory: /work
+    docker:
+      - image: circleci/mysql
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: study
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - schemaspy-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+            - schemaspy-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}
+            - schemaspy-{{ .Branch }}
+            - schemaspy-master
+      - run: ./gradlew migrateDb
+      - save_cache:
+          key: schemaspy-{{ .Branch }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "build.gradle" }}-{{ checksum "gradle.properties" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - "~/.gradle"
+            - "~/.m2"
+      - store_artifacts:
+          name: Store artifacts
+          path: html
+          destination: artifacts

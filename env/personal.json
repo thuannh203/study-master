@@ -1,0 +1,7 @@
+{
+	"flyway": {
+		"url": "jdbc:mysql://localhost:3306/study?useSSL=false&useLegacyDatetimeCode=false&serverTimezone=Universal",
+		"user": "root",
+		"password": "root"
+	}
+}
