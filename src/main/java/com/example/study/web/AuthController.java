@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/user")
@@ -40,6 +41,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public User register(@RequestBody User user){
+        user.setUserId(UUID.randomUUID().toString());
         user.setUserPassword(new BCryptPasswordEncoder().encode(user.getUserPassword()));
         return userService.create(user);
     }

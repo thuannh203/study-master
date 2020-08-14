@@ -21,7 +21,7 @@ public class User {
     @NotNull
     private String userId;
 
-    @JsonProperty("user_name")
+    @JsonProperty("username")
     @Column(name = "user_name")
     @NotNull
     private String username;
